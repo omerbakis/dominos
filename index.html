@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Domino's — Bu Öğlen Pizza Var</title>
+    <title>Domino's — Öğlen Tek Doğru Cevap</title>
     <meta name="description"
-        content="Domino's pizzayı öğle yemeği olarak keşfet. Pizza saatini kur, öğle molasını lezzetlendir!" />
+        content="Sandviç sıkıcı, salata yetersiz. Öğle yemeğinin tek doğru cevabı Domino's pizza. Alarm kur, sipariş ver." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,7 +18,7 @@
 <body>
 
     <!-- ══════════════════════════════════════
-       HERO SECTION — Red brand block
+       HERO SECTION
   ══════════════════════════════════════ -->
     <section class="hero">
 
@@ -35,34 +35,79 @@
                 </svg>
                 <span class="nav-brand">Domino's</span>
             </div>
-            <a href="#alarm-section" class="nav-cta">Alarm Kur 🔔</a>
+            <a href="#alarm-section" class="nav-cta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                Alarm Kur
+            </a>
         </nav>
 
         <!-- Hero content -->
         <div class="hero-inner">
             <div class="hero-text">
+
                 <div class="hero-tag">
                     <span class="tag-dot"></span>
-                    Öğle molası geldi
+                    12:00 YAKLAŞIYOR
                 </div>
 
                 <h1 class="hero-headline">
-                    <span class="line-1">BU ÖĞLEN</span>
-                    <span class="line-2">PIZZA<br>VAR.</span>
+                    <span class="line-1">ÖĞLEN TEK</span>
+                    <span class="line-2">DOĞRU<br>CEVAP.</span>
                 </h1>
 
                 <p class="hero-sub">
-                    Kim demiş pizza sadece akşamın yemeği diye?<br>
-                    Domino's öğle araları için de burada.
+                    Sandviç sıkıcı. Salata yetersiz.<br>
+                    <strong>Gerçek bir öğle yemeği kapında bekliyor.</strong>
                 </p>
 
                 <div class="hero-actions">
-                    <a href="#alarm-section" class="btn-hero-primary">Öğlen Alarmı Kur</a>
-                    <a href="https://www.dominos.com.tr" target="_blank" class="btn-hero-ghost">Sipariş Ver →</a>
+                    <a href="#alarm-section" class="btn-hero-primary">
+                        Öğlen Alarmı Kur
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round">
+                            <path d="M5 12h14" />
+                            <path d="M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                    <a href="https://www.dominos.com.tr" target="_blank" class="btn-hero-ghost">
+                        Şimdi Sipariş Ver
+                    </a>
                 </div>
+
+                <!-- Social proof stripe -->
+                <div class="hero-proof">
+                    <div class="proof-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)"
+                            stroke-width="2" stroke-linecap="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>30 dakikada kapıda</span>
+                    </div>
+                    <div class="proof-dot"></div>
+                    <div class="proof-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)"
+                            stroke-width="2" stroke-linecap="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>Öğle mola saatine özel</span>
+                    </div>
+                    <div class="proof-dot"></div>
+                    <div class="proof-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)"
+                            stroke-width="2" stroke-linecap="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>Her adrese teslimat</span>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Hero visual: clock preview -->
+            <!-- Hero visual -->
             <div class="hero-visual">
                 <div class="hero-clock-wrap">
                     <canvas id="heroCanvas" width="340" height="340"></canvas>
@@ -71,7 +116,6 @@
                         <span class="badge-time" id="heroCountdown">--:--:--</span>
                     </div>
                 </div>
-                <!-- Decorative dots -->
                 <div class="deco-dot deco-dot--1"></div>
                 <div class="deco-dot deco-dot--2"></div>
                 <div class="deco-dot deco-dot--3"></div>
@@ -98,19 +142,22 @@
                 <span class="eyebrow-line"></span>
             </div>
 
+            <!-- Hook above clock -->
+            <p class="clock-hook">
+                Her dakika bir karar.<br>
+                <strong>12:00'de doğrusunu yap.</strong>
+            </p>
+
             <div class="clock-frame">
-                <!-- Steam -->
                 <div class="steam-container">
                     <div class="steam s1"></div>
                     <div class="steam s2"></div>
                     <div class="steam s3"></div>
                 </div>
-
                 <canvas id="clockCanvas" width="480" height="480"></canvas>
                 <div class="pulse-ring" id="pulseRing"></div>
             </div>
 
-            <!-- Digital + Countdown side by side -->
             <div class="time-displays">
                 <div class="time-block">
                     <div class="time-block-label">Şu an</div>
@@ -121,7 +168,7 @@
                 <div class="time-block time-block--right">
                     <div class="time-block-label">Öğlene kalan</div>
                     <div class="countdown-time" id="countdownTime">--:--:--</div>
-                    <div class="countdown-sub" id="countdownSub">12:00'yi bekliyoruz 🍕</div>
+                    <div class="countdown-sub" id="countdownSub">12:00'yi bekliyoruz</div>
                 </div>
             </div>
         </div>
@@ -135,33 +182,55 @@
 
             <div class="why-heading-wrap">
                 <h2 class="why-heading">
-                    Neden öğlen<br>
-                    <em>pizza?</em>
+                    Alışkanlıkları<br>
+                    <em>kır.</em>
                 </h2>
-                <p class="why-sub">Alışkanlıkların seni sıkıştırmasına izin verme.<br>En iyi öğle yemeği zaten kapında.
+                <p class="why-sub">
+                    Salata yedikçe ne kadar mutlu oldun?<br>
+                    Domino's, öğleyin de seninle.
                 </p>
             </div>
 
             <div class="why-cards">
 
+                <!-- Card 1 -->
                 <div class="why-card why-card--red">
-                    <div class="card-icon">⚡</div>
-                    <h3>30 Dakikada<br>Kapıda</h3>
-                    <p>Öğle molası başlamadan pizza masana ulaşır. Beklemek için zamanın yok.</p>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                    </div>
+                    <h3>Beklerken<br>Acıkırsın.</h3>
+                    <p>Pizza 30 dakikada kapıda. Mola bitmeden masanda.</p>
                     <div class="card-accent"></div>
                 </div>
 
+                <!-- Card 2 -->
                 <div class="why-card why-card--blue">
-                    <div class="card-icon">💪</div>
-                    <h3>Öğleden<br>Öğlene</h3>
-                    <p>Gerçekten doyurucu, gerçekten lezzetli. Akşama kadar enerji dolu hissettir.</p>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                    </div>
+                    <h3>Bir Dilim Değil,<br>Gerçek Öğün.</h3>
+                    <p>Tok hisset. Öğleden öğlene enerji dolu kal.</p>
                     <div class="card-accent"></div>
                 </div>
 
+                <!-- Card 3 -->
                 <div class="why-card why-card--dark">
-                    <div class="card-icon">📍</div>
-                    <h3>Her Yere<br>Gelir</h3>
-                    <p>Ofis, ev, park — adresin nerede olursa olsun. Pizza seni bulur.</p>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                    </div>
+                    <h3>Pizza<br>Seni Bulur.</h3>
+                    <p>Ofis. Sahil. Park. Adresin nerede olursa olsun.</p>
                     <div class="card-accent"></div>
                 </div>
 
@@ -171,17 +240,17 @@
             <div class="stats-bar">
                 <div class="stat">
                     <div class="stat-num">30<span>dk</span></div>
-                    <div class="stat-label">Ortalama teslimat</div>
+                    <div class="stat-label">Garantili teslimat süresi</div>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat">
-                    <div class="stat-num">5<span>gün</span></div>
-                    <div class="stat-label">Haftalık öğle yemeği</div>
+                    <div class="stat-num">1<span>M+</span></div>
+                    <div class="stat-label">Öğle siparişi her gün</div>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat">
-                    <div class="stat-num">1<span>seçim</span></div>
-                    <div class="stat-label">Doğru karar: pizza</div>
+                    <div class="stat-num">#1<span></span></div>
+                    <div class="stat-label">Öğle yemeği tercihi</div>
                 </div>
             </div>
 
@@ -193,7 +262,6 @@
   ══════════════════════════════════════ -->
     <section class="alarm-section" id="alarm-section">
 
-        <!-- Top wave -->
         <div class="alarm-wave-top">
             <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0,40 C360,0 1080,80 1440,40 L1440,0 L0,0 Z" fill="#ffffff" />
@@ -212,15 +280,19 @@
             </div>
 
             <div class="alarm-content">
-                <h2 class="alarm-heading">Öğlen Alarmını<br>Şimdi Kur</h2>
-                <p class="alarm-desc">Saat 12:00 çaldığında telefon değil, pizza alarmın çalsın.</p>
+                <h2 class="alarm-heading">12:00 Çalmadan<br>Karar Ver.</h2>
+                <p class="alarm-desc">
+                    Mola gelince ne yiyeceğini düşünme.<br>
+                    <strong>Alarmı kur. Sipariş hazırda olsun.</strong>
+                </p>
 
                 <div class="alarm-card">
                     <div class="alarm-card-header">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E31837" stroke-width="2.5"
-                            stroke-linecap="round">
+                            stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            <line x1="12" y1="2" x2="12" y2="4" />
                         </svg>
                         <span>Öğle Arası Alarmı</span>
                     </div>
@@ -236,8 +308,9 @@
                             <input type="number" id="alarmMinute" min="0" max="59" value="0" />
                         </div>
                         <button class="btn-alarm-set" id="setAlarmBtn" onclick="setAlarm()">Alarmı Kur</button>
-                        <button class="btn-alarm-dismiss" id="dismissBtn" onclick="dismissAlarm()"
-                            style="display:none">İptal</button>
+                        <button class="btn-alarm-dismiss" id="dismissBtn" onclick="dismissAlarm()" style="display:none">
+                            İptal
+                        </button>
                     </div>
 
                     <div class="alarm-active-badge" id="alarmBadge" style="display:none">
@@ -249,7 +322,15 @@
                     </div>
                 </div>
 
-                <p class="alarm-note">Alarm çalındığında seni doğrudan Domino's'a bağlıyoruz 🍕</p>
+                <p class="alarm-note">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)"
+                        stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Alarm çalındığında seni Domino's siparişine bağlıyoruz.
+                </p>
             </div>
 
         </div>
@@ -270,7 +351,7 @@
                 </svg>
                 <span>Domino's Pizza</span>
             </div>
-            <p>© 2025 Domino's Pizza Türkiye — Her öğlen bir fırsat.</p>
+            <p>© 2025 Domino's Pizza Türkiye — Öğlen de, akşam da.</p>
         </div>
     </footer>
 
@@ -291,14 +372,14 @@
             </div>
 
             <div class="popup-body">
-                <div class="popup-tag">ÖĞLE ARASI !</div>
-                <h2 class="popup-headline">Bu Öğlen<br>Pizza Var.</h2>
-                <p class="popup-desc">Mola başladı. Sipariş verme vakti geldi.</p>
+                <div class="popup-tag">ÖĞLE ARASI BAŞLADI</div>
+                <h2 class="popup-headline">Mola Geldi.<br>Pizza Sırası.</h2>
+                <p class="popup-desc">Saniyeler kayboluyor. Siparişi ver, kazanmaya başla.</p>
             </div>
 
             <div class="popup-actions">
                 <button class="btn-popup-order" onclick="window.open('https://www.dominos.com.tr','_blank')">
-                    Sipariş Ver
+                    Sipariş Ver — Hemen
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                         stroke-linecap="round">
                         <path d="M5 12h14" />
@@ -308,7 +389,6 @@
                 <button class="btn-popup-close" onclick="dismissAlarm()">Belki sonra</button>
             </div>
 
-            <!-- Confetti container -->
             <div class="confetti-container" id="confettiContainer"></div>
         </div>
     </div>
