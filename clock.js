@@ -1,427 +1,426 @@
 /* =============================================
-   DOMINO'S PIZZA CLOCK - clock.js
+   DOMINO'S PIZZA CLOCK — clock.js
+   "Bu Öğlen Pizza Var" Campaign
    ============================================= */
 
-const canvas = document.getElementById('clockCanvas');
-const ctx    = canvas.getContext('2d');
-const W = canvas.width;
-const H = canvas.height;
-const CX = W / 2;
-const CY = H / 2;
-const R  = 230; // pizza radius
+/* ────────────────────────────────────────────
+   CANVAS SETUP
+────────────────────────────────────────────── */
+// Main big clock
+const mainCanvas = document.getElementById('clockCanvas');
+const mainCtx = mainCanvas ? mainCanvas.getContext('2d') : null;
+const MW = mainCanvas ? mainCanvas.width : 480;
+const MH = mainCanvas ? mainCanvas.height : 480;
+const MCX = MW / 2;
+const MCY = MH / 2;
+const MR = 218;   // main pizza radius
 
-// ---- Alarm state ----
-let alarmHour   = 12;
+// Small hero clock
+const heroCanvas = document.getElementById('heroCanvas');
+const heroCtx = heroCanvas ? heroCanvas.getContext('2d') : null;
+const HW = heroCanvas ? heroCanvas.width : 340;
+const HH = heroCanvas ? heroCanvas.height : 340;
+const HCX = HW / 2;
+const HCY = HH / 2;
+const HR = 155;
+
+/* ────────────────────────────────────────────
+   ALARM STATE
+────────────────────────────────────────────── */
+let alarmHour = 12;
 let alarmMinute = 0;
 let alarmActive = false;
 let alarmTriggered = false;
-let alarmAudio  = null;
-
-// ---- Audio context for beeps ----
+let alarmTimer = null;
 let audioCtx = null;
-function getAudioCtx() {
+
+/* ────────────────────────────────────────────
+   AUDIO
+────────────────────────────────────────────── */
+function getAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   return audioCtx;
 }
 
-function playAlarmSound() {
-  const ctx = getAudioCtx();
-  // Play a joyful ascending melody resembling a pizza jingle
+function playJingle() {
+  const a = getAudio();
   const melody = [
-    { freq: 523.25, dur: 0.15 }, // C5
-    { freq: 659.25, dur: 0.15 }, // E5
-    { freq: 783.99, dur: 0.15 }, // G5
-    { freq: 1046.5, dur: 0.25 }, // C6
-    { freq: 783.99, dur: 0.1  }, // G5
-    { freq: 1046.5, dur: 0.35 }, // C6
+    [523.25, 0.12], [659.25, 0.12], [783.99, 0.12],
+    [1046.5, 0.22], [783.99, 0.08], [1046.5, 0.3],
+    [880, 0.1], [1174.7, 0.35],
   ];
-  let t = ctx.currentTime + 0.05;
-  melody.forEach(note => {
-    const osc  = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+  let t = a.currentTime + 0.04;
+  melody.forEach(([freq, dur]) => {
+    const osc = a.createOscillator();
+    const g = a.createGain();
+    osc.connect(g); g.connect(a.destination);
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(note.freq, t);
-    gain.gain.setValueAtTime(0.35, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + note.dur * 0.9);
-    osc.start(t);
-    osc.stop(t + note.dur);
-    t += note.dur + 0.03;
+    osc.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.32, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
+    osc.start(t); osc.stop(t + dur);
+    t += dur + 0.025;
   });
 }
 
-function startAlarmLoop() {
-  playAlarmSound();
+function startJingleLoop() {
+  playJingle();
   if (!alarmTriggered) return;
-  alarmAudio = setTimeout(startAlarmLoop, 2200);
+  alarmTimer = setTimeout(startJingleLoop, 2800);
+}
+function stopJingle() {
+  clearTimeout(alarmTimer);
+  alarmTimer = null;
 }
 
-function stopAlarmSound() {
-  if (alarmAudio) { clearTimeout(alarmAudio); alarmAudio = null; }
-}
-
-// ---- Alarm control ----
+/* ────────────────────────────────────────────
+   ALARM CONTROL
+────────────────────────────────────────────── */
 function setAlarm() {
   const h = parseInt(document.getElementById('alarmHour').value);
   const m = parseInt(document.getElementById('alarmMinute').value);
   if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
-    alert('Geçerli bir saat girin!');
-    return;
+    alert('Geçerli bir saat girin!'); return;
   }
-  alarmHour   = h;
-  alarmMinute = m;
-  alarmActive = true;
-  alarmTriggered = false;
+  alarmHour = h; alarmMinute = m;
+  alarmActive = true; alarmTriggered = false;
 
-  const label = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-  document.getElementById('alarmLabel').textContent = `Öğle Alarmı: ${label}`;
-  document.getElementById('alarmBadge').style.display = 'block';
+  const label = `${pad(h)}:${pad(m)}`;
+  document.getElementById('alarmBadge').style.display = 'flex';
   document.getElementById('dismissBtn').style.display = 'inline-block';
   document.getElementById('setAlarmBtn').textContent = 'Güncelle';
 }
 
 function dismissAlarm() {
-  stopAlarmSound();
+  stopJingle();
   alarmTriggered = false;
   document.getElementById('alarmOverlay').classList.remove('show');
   document.getElementById('pulseRing').classList.remove('active');
-}
-
-// ---- Pizza slices colors ----
-const SLICE_COLORS = [
-  '#d4a84b', '#c99a3e', '#d4a84b', '#c99a3e',
-  '#d4a84b', '#c99a3e', '#d4a84b', '#c99a3e',
-];
-
-// ---- Topping positions (normalized -1..1) ----
-const TOPPINGS = [
-  // Pepperoni (circles)
-  { type: 'pepperoni', x: 0.25,  y: -0.55 },
-  { type: 'pepperoni', x: -0.42, y: -0.35 },
-  { type: 'pepperoni', x: 0.55,  y: 0.18  },
-  { type: 'pepperoni', x: -0.15, y: 0.52  },
-  { type: 'pepperoni', x: 0.15,  y: 0.15  },
-  { type: 'pepperoni', x: -0.55, y: 0.28  },
-  { type: 'pepperoni', x: 0.38,  y: -0.18 },
-  { type: 'pepperoni', x: -0.2,  y: -0.22 },
-  // Olives
-  { type: 'olive', x: -0.38, y: 0.52  },
-  { type: 'olive', x: 0.52,  y: -0.38 },
-  // Bell pepper strips
-  { type: 'pepper', x: 0.05,  y: -0.38, angle: 30  },
-  { type: 'pepper', x: -0.28, y: 0.1,  angle: -45 },
-  { type: 'pepper', x: 0.42,  y: 0.42, angle: 70  },
-];
-
-// ---- Hand configs ----
-const HAND = {
-  hour: {
-    length: R * 0.52, width: 10,
-    color: '#ff2244', shadow: 'rgba(255,30,60,0.7)',
-  },
-  minute: {
-    length: R * 0.72, width: 7,
-    color: '#fff',    shadow: 'rgba(255,255,255,0.5)',
-  },
-  second: {
-    length: R * 0.82, width: 3,
-    color: '#F5A623', shadow: 'rgba(245,166,35,0.9)',
-  },
-};
-
-// ---- Helper: draw rounded rect ----
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-// ---- Draw pizza base ----
-function drawPizzaBase() {
-  const nSlices = 8;
-  // Outer crust
-  ctx.beginPath();
-  ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.fillStyle = '#c8874a';
-  ctx.fill();
-
-  // Crust texture ring
-  ctx.beginPath();
-  ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.lineWidth = 22;
-  ctx.strokeStyle = '#b0743c';
-  ctx.stroke();
-
-  // Crust highlight
-  ctx.beginPath();
-  ctx.arc(CX, CY, R - 3, 0, Math.PI * 2);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = 'rgba(255,200,120,0.25)';
-  ctx.stroke();
-
-  // Pizza slices background (cheese)
-  for (let i = 0; i < nSlices; i++) {
-    const startAngle = (i / nSlices) * Math.PI * 2 - Math.PI / 2;
-    const endAngle   = ((i + 1) / nSlices) * Math.PI * 2 - Math.PI / 2;
-    ctx.beginPath();
-    ctx.moveTo(CX, CY);
-    ctx.arc(CX, CY, R - 14, startAngle, endAngle);
-    ctx.closePath();
-    ctx.fillStyle = SLICE_COLORS[i];
-    ctx.fill();
-    // Slice dividers
-    ctx.strokeStyle = 'rgba(150,80,0,0.35)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-
-  // Tomato sauce pool in center area
-  const grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, R * 0.4);
-  grad.addColorStop(0,   'rgba(180,30,10,0.25)');
-  grad.addColorStop(0.7, 'rgba(180,30,10,0.1)');
-  grad.addColorStop(1,   'rgba(180,30,10,0)');
-  ctx.beginPath();
-  ctx.arc(CX, CY, R - 14, 0, Math.PI * 2);
-  ctx.fillStyle = grad;
-  ctx.fill();
-}
-
-// ---- Draw toppings ----
-function drawToppings() {
-  TOPPINGS.forEach(t => {
-    const px = CX + t.x * (R - 30);
-    const py = CY + t.y * (R - 30);
-
-    if (t.type === 'pepperoni') {
-      // Pepperoni disc
-      ctx.beginPath();
-      ctx.arc(px, py, 18, 0, Math.PI * 2);
-      const pg = ctx.createRadialGradient(px - 4, py - 4, 2, px, py, 18);
-      pg.addColorStop(0, '#c0392b');
-      pg.addColorStop(1, '#7b0c07');
-      ctx.fillStyle = pg;
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      // Fat spots on pepperoni
-      for (let i = 0; i < 5; i++) {
-        const a  = (i / 5) * Math.PI * 2;
-        const sx = px + Math.cos(a) * 9;
-        const sy = py + Math.sin(a) * 9;
-        ctx.beginPath();
-        ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,180,160,0.5)';
-        ctx.fill();
-      }
-    } else if (t.type === 'olive') {
-      ctx.beginPath();
-      ctx.arc(px, py, 11, 0, Math.PI * 2);
-      ctx.fillStyle = '#2d2d1e';
-      ctx.fill();
-      // Olive hole
-      ctx.beginPath();
-      ctx.arc(px, py, 4, 0, Math.PI * 2);
-      ctx.fillStyle = '#c8874a';
-      ctx.fill();
-    } else if (t.type === 'pepper') {
-      const rad = (t.angle || 0) * Math.PI / 180;
-      ctx.save();
-      ctx.translate(px, py);
-      ctx.rotate(rad);
-      roundRect(ctx, -18, -5, 36, 10, 5);
-      ctx.fillStyle = '#3aaa35';
-      ctx.fill();
-      ctx.strokeStyle = '#2d8428';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.restore();
-    }
-  });
-}
-
-// ---- Draw hour markers ----
-function drawMarkers() {
-  for (let i = 0; i < 12; i++) {
-    const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    const isMain = i % 3 === 0;
-    const len  = isMain ? 22 : 14;
-    const wid  = isMain ? 4  : 2;
-    const x1 = CX + Math.cos(angle) * (R - 24);
-    const y1 = CY + Math.sin(angle) * (R - 24);
-    const x2 = CX + Math.cos(angle) * (R - 24 - len);
-    const y2 = CY + Math.sin(angle) * (R - 24 - len);
-
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = isMain ? '#fff' : 'rgba(255,255,255,0.55)';
-    ctx.lineWidth = wid;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-  }
-
-  // 12 numeric labels (Domino's style - dots pattern)
-  const labels = ['12','1','2','3','4','5','6','7','8','9','10','11'];
-  ctx.save();
-  ctx.font = 'bold 18px Outfit, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#fff';
-  labels.forEach((lbl, i) => {
-    const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    const tx = CX + Math.cos(angle) * (R - 55);
-    const ty = CY + Math.sin(angle) * (R - 55);
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 4;
-    ctx.fillText(lbl, tx, ty);
-  });
-  ctx.restore();
-}
-
-// ---- Draw a clock hand ----
-function drawHand(angle, cfg) {
-  const x = CX + Math.cos(angle) * cfg.length;
-  const y = CY + Math.sin(angle) * cfg.length;
-  // Back nub
-  const bx = CX - Math.cos(angle) * 20;
-  const by = CY - Math.sin(angle) * 20;
-
-  ctx.save();
-  ctx.shadowColor = cfg.shadow;
-  ctx.shadowBlur  = 12;
-  ctx.beginPath();
-  ctx.moveTo(bx, by);
-  ctx.lineTo(x, y);
-  ctx.strokeStyle = cfg.color;
-  ctx.lineWidth   = cfg.width;
-  ctx.lineCap     = 'round';
-  ctx.stroke();
-  ctx.restore();
-}
-
-// ---- Draw center cap ---- 
-function drawCenter() {
-  // Domino's dot / center cap
-  const cg = ctx.createRadialGradient(CX - 3, CY - 3, 1, CX, CY, 16);
-  cg.addColorStop(0, '#ffffff');
-  cg.addColorStop(1, '#E31837');
-  ctx.beginPath();
-  ctx.arc(CX, CY, 14, 0, Math.PI * 2);
-  ctx.fillStyle = cg;
-  ctx.shadowColor = 'rgba(227,24,55,0.8)';
-  ctx.shadowBlur  = 10;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Two dominos dots
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(CX, CY, 4, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-// ---- Main draw loop ----
-function draw() {
-  const now  = new Date();
-  const sec  = now.getSeconds() + now.getMilliseconds() / 1000;
-  const min  = now.getMinutes() + sec / 60;
-  const hour = (now.getHours() % 12) + min / 60;
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Draw pizza base
-  drawPizzaBase();
-  drawToppings();
-  drawMarkers();
-
-  // Hour hand
-  drawHand((hour / 12) * Math.PI * 2 - Math.PI / 2, HAND.hour);
-  // Minute hand
-  drawHand((min  / 60) * Math.PI * 2 - Math.PI / 2, HAND.minute);
-  // Second hand
-  drawHand((sec  / 60) * Math.PI * 2 - Math.PI / 2, HAND.second);
-
-  drawCenter();
-
-  // ---- Update digital display ----
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  const ss = String(now.getSeconds()).padStart(2, '0');
-  document.getElementById('digitalTime').textContent = `${hh}:${mm}:${ss}`;
-
-  // ---- Date ----
-  const DAYS = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-  const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
-                  'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  document.getElementById('digitalDate').textContent =
-    `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
-
-  // ---- Alarm check ----
-  if (alarmActive && !alarmTriggered) {
-    if (now.getHours() === alarmHour && now.getMinutes() === alarmMinute && now.getSeconds() === 0) {
-      triggerAlarm();
-    }
-  }
-
-  requestAnimationFrame(draw);
 }
 
 function triggerAlarm() {
   alarmTriggered = true;
   document.getElementById('alarmOverlay').classList.add('show');
   document.getElementById('pulseRing').classList.add('active');
-  startAlarmLoop();
+  startJingleLoop();
+  launchConfetti();
 }
 
-// ---- Background particles ----
-function createParticles() {
-  const container = document.getElementById('particles');
-  const emojis = ['🍕','🍅','🧀','🫒','🌶️'];
-  for (let i = 0; i < 22; i++) {
+/* ────────────────────────────────────────────
+   CONFETTI
+────────────────────────────────────────────── */
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  const COLORS = ['#E31837', '#006491', '#ffffff', '#FFD700', '#E31837', '#006491'];
+  for (let i = 0; i < 50; i++) {
     const el = document.createElement('div');
-    el.className = 'particle';
-    const size = 14 + Math.random() * 22;
+    el.className = 'confetti-piece';
     el.style.cssText = `
-      width:${size}px; height:${size}px;
-      left:${Math.random()*100}%;
-      bottom:${-10 + Math.random()*10}%;
-      font-size:${size}px;
-      animation-duration:${8 + Math.random()*14}s;
-      animation-delay:${Math.random()*12}s;
-      border-radius:50%;
-      background:transparent;
-      display:flex; align-items:center; justify-content:center;
-      opacity:0.15;
+      left: ${Math.random() * 100}%;
+      background: ${COLORS[Math.floor(Math.random() * COLORS.length)]};
+      width: ${6 + Math.random() * 8}px;
+      height: ${6 + Math.random() * 8}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${1.2 + Math.random() * 1.5}s;
+      animation-delay: ${Math.random() * 0.6}s;
     `;
-    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
     container.appendChild(el);
   }
 }
 
-// ---- Alarm input sync ----
-document.getElementById('alarmHour').addEventListener('input', () => {
-  const h = parseInt(document.getElementById('alarmHour').value);
-  const m = parseInt(document.getElementById('alarmMinute').value);
-  const label = `${String(h||0).padStart(2,'0')}:${String(m||0).padStart(2,'0')}`;
-  document.getElementById('alarmLabel').textContent = `Öğle Alarmı: ${label}`;
-});
-document.getElementById('alarmMinute').addEventListener('input', () => {
-  const h = parseInt(document.getElementById('alarmHour').value);
-  const m = parseInt(document.getElementById('alarmMinute').value);
-  const label = `${String(h||0).padStart(2,'0')}:${String(m||0).padStart(2,'0')}`;
-  document.getElementById('alarmLabel').textContent = `Öğle Alarmı: ${label}`;
+/* ────────────────────────────────────────────
+   PIZZA DRAWING UTILITIES
+────────────────────────────────────────────── */
+const SLICE_COLORS = ['#d4a84b', '#c99a3e', '#d4a84b', '#c99a3e', '#d4a84b', '#c99a3e', '#d4a84b', '#c99a3e'];
+
+function drawPizzaBase(ctx, cx, cy, r) {
+  const n = 8;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#c8874a'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.lineWidth = Math.max(14, r * 0.095);
+  ctx.strokeStyle = '#b0743c'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,200,120,0.2)'; ctx.stroke();
+
+  for (let i = 0; i < n; i++) {
+    const sa = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const ea = ((i + 1) / n) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r - 12, sa, ea); ctx.closePath();
+    ctx.fillStyle = SLICE_COLORS[i]; ctx.fill();
+    ctx.strokeStyle = 'rgba(140,70,0,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.45);
+  gr.addColorStop(0, 'rgba(180,30,10,0.22)');
+  gr.addColorStop(1, 'rgba(180,30,10,0)');
+  ctx.beginPath(); ctx.arc(cx, cy, r - 12, 0, Math.PI * 2);
+  ctx.fillStyle = gr; ctx.fill();
+}
+
+const SCALE_BASE = 230; // original design radius
+function normToScale(r) { return r / SCALE_BASE; }
+
+function drawToppings(ctx, cx, cy, r) {
+  const s = normToScale(r);
+  const TOPS = [
+    { type: 'pepperoni', x: 0.25, y: -0.55 },
+    { type: 'pepperoni', x: -0.42, y: -0.35 },
+    { type: 'pepperoni', x: 0.55, y: 0.18 },
+    { type: 'pepperoni', x: -0.15, y: 0.52 },
+    { type: 'pepperoni', x: 0.15, y: 0.15 },
+    { type: 'pepperoni', x: -0.55, y: 0.28 },
+    { type: 'pepperoni', x: 0.38, y: -0.18 },
+    { type: 'pepperoni', x: -0.2, y: -0.22 },
+    { type: 'olive', x: -0.38, y: 0.52 },
+    { type: 'olive', x: 0.52, y: -0.38 },
+    { type: 'pepper', x: 0.05, y: -0.38, angle: 30 },
+    { type: 'pepper', x: -0.28, y: 0.1, angle: -45 },
+    { type: 'pepper', x: 0.42, y: 0.42, angle: 70 },
+  ];
+
+  TOPS.forEach(t => {
+    const px = cx + t.x * (r - 22);
+    const py = cy + t.y * (r - 22);
+
+    if (t.type === 'pepperoni') {
+      const pr = 18 * s;
+      ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2);
+      const pg = ctx.createRadialGradient(px - 3 * s, py - 3 * s, 1, px, py, pr);
+      pg.addColorStop(0, '#c0392b'); pg.addColorStop(1, '#7b0c07');
+      ctx.fillStyle = pg; ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1; ctx.stroke();
+      for (let i = 0; i < 5; i++) {
+        const a = i / 5 * Math.PI * 2;
+        ctx.beginPath(); ctx.arc(px + Math.cos(a) * 9 * s, py + Math.sin(a) * 9 * s, 2.2 * s, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,160,140,0.45)'; ctx.fill();
+      }
+    } else if (t.type === 'olive') {
+      const or = 11 * s;
+      ctx.beginPath(); ctx.arc(px, py, or, 0, Math.PI * 2);
+      ctx.fillStyle = '#2d2d1e'; ctx.fill();
+      ctx.beginPath(); ctx.arc(px, py, 4 * s, 0, Math.PI * 2);
+      ctx.fillStyle = '#c8874a'; ctx.fill();
+    } else if (t.type === 'pepper') {
+      const rad = (t.angle || 0) * Math.PI / 180;
+      const pw = 36 * s, ph = 10 * s, pr = 5 * s;
+      ctx.save(); ctx.translate(px, py); ctx.rotate(rad);
+      ctx.beginPath();
+      ctx.moveTo(-pw / 2 + pr, -ph / 2);
+      ctx.lineTo(pw / 2 - pr, -ph / 2); ctx.quadraticCurveTo(pw / 2, -ph / 2, pw / 2, -ph / 2 + pr);
+      ctx.lineTo(pw / 2, ph / 2 - pr); ctx.quadraticCurveTo(pw / 2, ph / 2, pw / 2 - pr, ph / 2);
+      ctx.lineTo(-pw / 2 + pr, ph / 2); ctx.quadraticCurveTo(-pw / 2, ph / 2, -pw / 2, ph / 2 - pr);
+      ctx.lineTo(-pw / 2, -ph / 2 + pr); ctx.quadraticCurveTo(-pw / 2, -ph / 2, -pw / 2 + pr, -ph / 2);
+      ctx.closePath();
+      ctx.fillStyle = '#3aaa35'; ctx.fill();
+      ctx.strokeStyle = '#2d8428'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.restore();
+    }
+  });
+}
+
+function drawMarkers(ctx, cx, cy, r) {
+  for (let i = 0; i < 12; i++) {
+    const angle = i / 12 * Math.PI * 2 - Math.PI / 2;
+    const main = i % 3 === 0;
+    const len = (main ? 20 : 12) * normToScale(r);
+    const wid = main ? 4 : 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle) * (r - 20), cy + Math.sin(angle) * (r - 20));
+    ctx.lineTo(cx + Math.cos(angle) * (r - 20 - len), cy + Math.sin(angle) * (r - 20 - len));
+    ctx.strokeStyle = main ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = wid; ctx.lineCap = 'round'; ctx.stroke();
+  }
+  // Numbers
+  const labels = ['12', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+  const fsize = Math.max(11, 17 * normToScale(r));
+  ctx.save();
+  ctx.font = `bold ${fsize}px Nunito, Open Sans, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 3;
+  labels.forEach((lbl, i) => {
+    const angle = i / 12 * Math.PI * 2 - Math.PI / 2;
+    const dist = r - 50 * normToScale(r);
+    ctx.fillText(lbl, cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist);
+  });
+  ctx.restore();
+}
+
+function drawHand(ctx, cx, cy, angle, length, width, color, shadow) {
+  const x = cx + Math.cos(angle) * length;
+  const y = cy + Math.sin(angle) * length;
+  const bx = cx - Math.cos(angle) * 18;
+  const by = cy - Math.sin(angle) * 18;
+  ctx.save();
+  ctx.shadowColor = shadow; ctx.shadowBlur = 14;
+  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(x, y);
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round';
+  ctx.stroke(); ctx.restore();
+}
+
+function drawDominoCenter(ctx, cx, cy, r) {
+  const scale = normToScale(r);
+  const TW = 54 * scale, TH = 30 * scale, TR = 4 * scale;
+  const TX = cx - TW / 2, TY = cy - TH / 2;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = 10;
+
+  // Blue half
+  ctx.beginPath();
+  ctx.moveTo(TX + TR, TY); ctx.lineTo(TX + TW / 2, TY);
+  ctx.lineTo(TX + TW / 2, TY + TH); ctx.lineTo(TX + TR, TY + TH);
+  ctx.quadraticCurveTo(TX, TY + TH, TX, TY + TH - TR);
+  ctx.lineTo(TX, TY + TR); ctx.quadraticCurveTo(TX, TY, TX + TR, TY);
+  ctx.closePath(); ctx.fillStyle = '#006491'; ctx.fill();
+
+  // Red half
+  ctx.beginPath();
+  ctx.moveTo(TX + TW / 2, TY); ctx.lineTo(TX + TW - TR, TY);
+  ctx.quadraticCurveTo(TX + TW, TY, TX + TW, TY + TR);
+  ctx.lineTo(TX + TW, TY + TH - TR);
+  ctx.quadraticCurveTo(TX + TW, TY + TH, TX + TW - TR, TY + TH);
+  ctx.lineTo(TX + TW / 2, TY + TH); ctx.closePath();
+  ctx.fillStyle = '#E31837'; ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Dots — blue side (2)
+  const BX = cx - TW / 4;
+  [cy - 7 * scale, cy + 7 * scale].forEach(dotY => {
+    ctx.beginPath(); ctx.arc(BX, dotY, 4.5 * scale, 0, Math.PI * 2);
+    ctx.fillStyle = 'white'; ctx.fill();
+  });
+  // Dot — red side (1)
+  ctx.beginPath(); ctx.arc(cx + TW / 4, cy, 5.5 * scale, 0, Math.PI * 2);
+  ctx.fillStyle = 'white'; ctx.fill();
+
+  // Divider
+  ctx.beginPath();
+  ctx.moveTo(cx, TY + 3); ctx.lineTo(cx, TY + TH - 3);
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+
+  ctx.restore();
+}
+
+/* ────────────────────────────────────────────
+   DRAW SINGLE CLOCK FRAME
+────────────────────────────────────────────── */
+function renderClock(ctx, cx, cy, r, now) {
+  const sec = now.getSeconds() + now.getMilliseconds() / 1000;
+  const min = now.getMinutes() + sec / 60;
+  const hour = (now.getHours() % 12) + min / 60;
+
+  ctx.clearRect(cx - r - 30, cy - r - 30, (r + 30) * 2, (r + 30) * 2);
+
+  drawPizzaBase(ctx, cx, cy, r);
+  drawToppings(ctx, cx, cy, r);
+  drawMarkers(ctx, cx, cy, r);
+
+  // Hour — Red #E31837
+  drawHand(ctx, cx, cy, hour / 12 * Math.PI * 2 - Math.PI / 2, r * 0.52, 10 * normToScale(r), '#E31837', 'rgba(227,24,55,0.75)');
+  // Minute — Blue #006491
+  drawHand(ctx, cx, cy, min / 60 * Math.PI * 2 - Math.PI / 2, r * 0.73, 7 * normToScale(r), '#006491', 'rgba(0,100,145,0.65)');
+  // Second — White
+  drawHand(ctx, cx, cy, sec / 60 * Math.PI * 2 - Math.PI / 2, r * 0.83, 2.5 * normToScale(r), '#ffffff', 'rgba(255,255,255,0.7)');
+
+  drawDominoCenter(ctx, cx, cy, r);
+}
+
+/* ────────────────────────────────────────────
+   NOON COUNTDOWN
+────────────────────────────────────────────── */
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function getNoonCountdown(now) {
+  let noon = new Date(now);
+  noon.setHours(12, 0, 0, 0);
+  if (now >= noon) {
+    // next day noon
+    noon.setDate(noon.getDate() + 1);
+  }
+  const diff = Math.max(0, noon - now);
+  const hh = Math.floor(diff / 3600000);
+  const mm = Math.floor((diff % 3600000) / 60000);
+  const ss = Math.floor((diff % 60000) / 1000);
+  return { hh, mm, ss, diff };
+}
+
+/* ────────────────────────────────────────────
+   MAIN LOOP
+────────────────────────────────────────────── */
+const DAYS = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+function tick() {
+  const now = new Date();
+
+  // ── Render canvases ──
+  if (mainCtx) {
+    mainCtx.clearRect(0, 0, MW, MH);
+    renderClock(mainCtx, MCX, MCY, MR, now);
+  }
+  if (heroCtx) {
+    heroCtx.clearRect(0, 0, HW, HH);
+    renderClock(heroCtx, HCX, HCY, HR, now);
+  }
+
+  // ── Digital time ──
+  const el = document.getElementById('digitalTime');
+  if (el) el.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  // ── Date ──
+  const dateEl = document.getElementById('digitalDate');
+  if (dateEl) {
+    dateEl.textContent = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`.toUpperCase();
+  }
+
+  // ── Noon countdown ──
+  const { hh, mm, ss, diff } = getNoonCountdown(now);
+  const cdTime = `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+
+  const cdEl = document.getElementById('countdownTime');
+  const cdSub = document.getElementById('countdownSub');
+  const hcEl = document.getElementById('heroCountdown');
+
+  if (hcEl) hcEl.textContent = cdTime;
+  if (cdEl) {
+    if (diff === 0) {
+      cdEl.textContent = 'ŞIMDI!';
+      if (cdSub) cdSub.textContent = '🍕 Pizza zamanı!';
+    } else {
+      cdEl.textContent = cdTime;
+      if (cdSub) {
+        const isToday = new Date().getHours() < 12;
+        cdSub.textContent = isToday ? 'Bugün öğlene kalan ⏱️' : 'Yarın öğlene kalan ⏱️';
+      }
+    }
+  }
+
+  // ── Alarm check ──
+  if (alarmActive && !alarmTriggered) {
+    if (now.getHours() === alarmHour && now.getMinutes() === alarmMinute && now.getSeconds() === 0) {
+      triggerAlarm();
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+/* ────────────────────────────────────────────
+   ALARM INPUT SYNC
+────────────────────────────────────────────── */
+['alarmHour', 'alarmMinute'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => {
+    const h = parseInt(document.getElementById('alarmHour').value) || 0;
+    const m = parseInt(document.getElementById('alarmMinute').value) || 0;
+  });
 });
 
-// ---- Init ----
-createParticles();
-draw();
+/* ────────────────────────────────────────────
+   INIT
+────────────────────────────────────────────── */
+tick();
