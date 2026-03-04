@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domino's Pizza Saat</title>
+  <meta name="description" content="Domino's Pizza temalı interaktif saat - Öğle arası pizza alarmıyla!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Background particles -->
+  <div class="bg-particles" id="particles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-wrap">
+      <div class="dominos-logo">
+        <span class="d-red">domino's</span>
+        <span class="d-dot">&#9632;</span>
+        <span class="d-blue">PIZZA</span>
+      </div>
+    </div>
+    <div class="alarm-status" id="alarmStatus">
+      <span class="alarm-icon">🔔</span>
+      <span id="alarmLabel">Öğle Alarmı: 12:00</span>
+    </div>
+  </header>
+
+  <!-- Main clock area -->
+  <main class="clock-stage">
+    <div class="clock-container">
+      <!-- Steam effect -->
+      <div class="steam-container">
+        <div class="steam steam1"></div>
+        <div class="steam steam2"></div>
+        <div class="steam steam3"></div>
+      </div>
+
+      <!-- Pizza clock SVG -->
+      <canvas id="clockCanvas" width="520" height="520"></canvas>
+
+      <!-- Pulse ring -->
+      <div class="pulse-ring" id="pulseRing"></div>
+    </div>
+
+    <!-- Digital time display -->
+    <div class="digital-display">
+      <div class="digital-time" id="digitalTime">00:00:00</div>
+      <div class="digital-date" id="digitalDate"></div>
+    </div>
+
+    <!-- Alarm controls -->
+    <div class="alarm-panel">
+      <h3 class="alarm-title">🍕 Öğle Arası Alarmı</h3>
+      <div class="alarm-controls">
+        <div class="time-input-group">
+          <label>Saat</label>
+          <input type="number" id="alarmHour" min="0" max="23" value="12" />
+        </div>
+        <span class="colon">:</span>
+        <div class="time-input-group">
+          <label>Dakika</label>
+          <input type="number" id="alarmMinute" min="0" max="59" value="0" />
+        </div>
+        <button class="btn-set" id="setAlarmBtn" onclick="setAlarm()">Ayarla</button>
+        <button class="btn-dismiss" id="dismissBtn" onclick="dismissAlarm()" style="display:none">Kapat</button>
+      </div>
+      <div class="alarm-active-badge" id="alarmBadge" style="display:none">
+        ✅ Alarm Kurulu
+      </div>
+    </div>
+  </main>
+
+  <!-- Alarm overlay -->
+  <div class="alarm-overlay" id="alarmOverlay">
+    <div class="alarm-popup">
+      <div class="pizza-emoji-big">🍕</div>
+      <h2>ÖĞLE ARASI!</h2>
+      <p>Pizza zamanı geldi! 🎉</p>
+      <p class="order-text">Domino's'tan sipariş ver!</p>
+      <button class="btn-order" onclick="window.open('https://www.dominos.com.tr','_blank')">Sipariş Ver 🍕</button>
+      <button class="btn-close-overlay" onclick="dismissAlarm()">Tamam, anladım</button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Made with ❤️ &amp; 🍕 for Domino's Pizza</p>
+  </footer>
+
+  <script src="clock.js"></script>
+</body>
+</html>
